@@ -80,7 +80,8 @@ export async function createHandlers({ getState }: { getState: Function }) {
                 keydb = await axios.post(interfaceConfig.DOMAIN + '/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
                 optioncon.seturlInvite(keydb.data.urlInvite)
             }else{
-                keydb = await axios.post(interfaceConfig.DOMAIN + '/checkkey',{meetingid : meetingid , clientname: 'onechat'})
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK + '/checkkey',{meetingid : meetingid , clientname: 'onechat'})
+                optioncon.setcheckplatfrom('https://chat.one.th')
             }
             attendee.setname(name)
             attendee.setoption(option)
@@ -91,6 +92,7 @@ export async function createHandlers({ getState }: { getState: Function }) {
                 attendee.setpass('false')
             }
         } catch (error) {
+
             console.log(error)
         }
     }else{
@@ -100,9 +102,13 @@ export async function createHandlers({ getState }: { getState: Function }) {
         const nickname = await decodeURI(locationURL.href.split('#')[3])
         const option = locationURL.href.split('#')[4]
         const roomname = await decodeURI(locationURL.href.split('#')[5])
+        const platform = locationURL.href.split('#')[6]
         // const roomname = locationURL.href.split('#')[5]
         const meetingid = locationURL.href.split("/")[3].split("#")[0]
         auth.setauth({id: idauth, pass: passauth, nickname: nickname , option: option , roomname : roomname , meetingid: meetingid})
+        if(platform === 'onechat'){
+            optioncon.setcheckplatfrom('https://chat.one.th')
+        }
         try {
             let keydb = await axios.post(interfaceConfig.DOMAIN + '/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
             optioncon.seturlInvite(keydb.data.urlInvite)

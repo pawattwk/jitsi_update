@@ -1414,6 +1414,8 @@ export default {
 
     _getConferenceOptions() {
         this.changeLocalDisplayName.bind(this)
+        // console.log("_____1", keyjoin);
+        // console.log("_____2", attendee.pass);
         if(attendee.pass !== keyjoin ){
             this.changeLocalDisplayName(auth_moderator.auth.nickname)
         }else{
@@ -3031,7 +3033,12 @@ export default {
             room = undefined;
 
             APP.API.notifyReadyToClose();
-            APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
+            if(optioncon.checkplatfrom === 'https://chat.one.th'){
+                window.location.href = optioncon.checkplatfrom
+            }else{
+                window.location.href = interfaceConfig.DOMAIN
+            }
+            // APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
         });
     },
 

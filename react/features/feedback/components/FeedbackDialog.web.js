@@ -276,7 +276,8 @@ class FeedbackDialog extends Component<Props, State> {
         const scoreToSubmit = score > -1 ? score + 1 : score;
         // const scoreToSubmit = 0;
 
-        this.props.dispatch(cancelFeedback(scoreToSubmit, message)).then(window.location.href = interfaceConfig.DOMAIN);
+        this.props.dispatch(cancelFeedback(scoreToSubmit, message))
+        //.then(window.location.href = interfaceConfig.DOMAIN);
         // window.location.href = interfaceConfig.DOMAIN
         
         return true;

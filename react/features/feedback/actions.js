@@ -70,18 +70,19 @@ export function maybeOpenFeedbackDialog(conference: Object) {
                 feedbackSubmitted: true,
                 showThankYou: true
             });
-        } else if (conference.isCallstatsEnabled() && feedbackPercentage > Math.random() * 100) {
-            return new Promise(resolve => {
-                dispatch(openFeedbackDialog(conference, () => {
-                    const { submitted } = getState()['features/feedback'];
+        } 
+        // else if (conference.isCallstatsEnabled() && feedbackPercentage > Math.random() * 100) {
+        //     return new Promise(resolve => {
+        //         dispatch(openFeedbackDialog(conference, () => {
+        //             const { submitted } = getState()['features/feedback'];
 
-                    resolve({
-                        feedbackSubmitted: submitted,
-                        showThankYou: false
-                    });
-                }));
-            });
-        }
+        //             resolve({
+        //                 feedbackSubmitted: submitted,
+        //                 showThankYou: false
+        //             });
+        //         }));
+        //     });
+        // }
 
         return new Promise(resolve => {
                 dispatch(openFeedbackDialog(conference, () => {
@@ -187,8 +188,10 @@ export function submitFeedback(
             };
 
         return (dispatch: Dispatch<any>) => fetch(interfaceConfig.DOMAIN +'/feedback', requestOptions)
+        // return (dispatch: Dispatch<any>) => fetch(interfaceConfig.MC_IP +'/backend/api/feedback', requestOptions)
             .then(response => response.text())
-            .then(result => console.log(result)).then(window.location.href = interfaceConfig.DOMAIN)
+            .then(result => console.log(result))
+            // .then(window.location.href = interfaceConfig.DOMAIN)
             .catch(error => console.log('error', error));
         
 }

@@ -32,7 +32,7 @@ export function connect() {
             () => APP.conference.init({
                 roomName: room
             }).catch(error => {
-                window.location.href = interfaceConfig.DOMAIN
+                // window.location.href = interfaceConfig.DOMAIN
                 APP.API.notifyConferenceLeft(APP.conference.roomName);
                 logger.error(error);
             }));

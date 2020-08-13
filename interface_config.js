@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars, no-var, max-len */
 
 var interfaceConfig = {
-    DOMAIN: 'https://oneconference-new.inet.co.th',
+    DOMAIN_BACK: 'https://meet-room.one.th',	
+    DOMAIN: 'https://meet.one.th',
+    // MC_IP: '192.168.92.1:27017',
     DEFAULT_BACKGROUND: '#474747',
     // DEFAULT_LOGO_URL: '/images/inetlogo.png',
     // 'https://oneconf-dev3.cloudns.asia/images/watermark.png',
@@ -23,7 +25,7 @@ var interfaceConfig = {
     // if watermark is disabled by default, it can be shown only for guests
     SHOW_WATERMARK_FOR_GUESTS: true,
     SHOW_BRAND_WATERMARK: true,
-    BRAND_URL: 'https://oneconference-vc.inet.co.th/images/logo_inet.png',
+    BRAND_URL: 'https://meet-room.one.th/images/logo_inet.png',
     BRAND_WATERMARK_LINK: 'https://inet.co.th',
     SHOW_POWERED_BY: false,
     SHOW_DEEP_LINKING_IMAGE: false,
