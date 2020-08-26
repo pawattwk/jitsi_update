@@ -96,7 +96,7 @@ export { default as IconVideoQualitySD } from './SD.svg';
 export { default as IconVolume } from './volume.svg';
 export { default as IconVolumeEmpty } from './volume-empty.svg';
 export { default as IconVolumeOff } from './volume-off.svg';
-export { default as IconVotes } from './checkmark.svg';
+export { default as IconVotes } from './newvotes.svg';
 // export { default as IconChat } from './checkmark.svg';
 export { default as IconWarning } from './warning.svg';
 export { default as IconYahoo } from './yahoo.svg';
