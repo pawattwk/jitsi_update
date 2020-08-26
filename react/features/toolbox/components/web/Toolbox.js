@@ -1,7 +1,14 @@
 // @flow
-
+// import React from "react";
+import Modal from 'react-awesome-modal';
+import DragM from "dragm";
+import socketIOClient from 'socket.io-client'
+import Draggable from 'react-draggable';
 import React, { Component } from 'react';
-import votes from '../../../votes/votes'
+import attendee from '../../../../../attendee_join'
+import moderator from '../../../../../current_auth'
+import env from '../../../../../env_nodejs'
+import votes from './Votes'
 import {
     ACTION_SHORTCUT_TRIGGERED,
     createShortcutEvent,
@@ -22,7 +29,7 @@ import {
     IconRec,
     IconShareDesktop,
     IconShareVideo,
-    IconVotes
+    IconVotes,
 } from '../../../base/icons';
 import {
     getLocalParticipant,
@@ -83,9 +90,42 @@ import OverflowMenuProfileItem from './OverflowMenuProfileItem';
 import ToolbarButton from './ToolbarButton';
 import VideoSettingsButton from './VideoSettingsButton';
 
+import MobileStepper from "@material-ui/core/MobileStepper";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import Button from "@material-ui/core/Button";
+import { Checkbox } from "@material-ui/core";
+import TextField from '@material-ui/core/TextField';
+import axios from 'axios'
+import Icon from '@material-ui/core/Icon';
+import IconButton from '@material-ui/core/IconButton';
+//   const classes = useStyles();
+//   const theme = useTheme();
 /**
+ * 
  * The type of the React {@code Component} props of {@link Toolbox}.
  */
+
+class BuildTitle extends React.Component {
+    updateTransform = transformStr => {
+      this.modalDom.style.transform = transformStr;
+    };
+    componentDidMount() {
+      this.modalDom = document.getElementsByClassName(
+        "ant-modal-wrap" //modal的class是ant-modal-wrap
+      )[0];
+    }
+    render() {
+      const { title } = this.props;
+      return (
+        <DragM updateTransform={this.updateTransform}>
+          <div>{title}</div>
+        </DragM>
+      );
+    }
+  }
+
+
 type Props = {
 
     /**
@@ -223,13 +263,12 @@ class Toolbox extends Component<Props, State> {
      */
     constructor(props: Props) {
         super(props);
-
         // Bind event handlers so they are only bound once per instance.
         this._onMouseOut = this._onMouseOut.bind(this);
         this._onMouseOver = this._onMouseOver.bind(this);
         this._onResize = this._onResize.bind(this);
         this._onSetOverflowVisible = this._onSetOverflowVisible.bind(this);
-
+        this._votes = votes.bind(this)
         this._onShortcutToggleChat = this._onShortcutToggleChat.bind(this);
         this._onShortcutToggleFullScreen = this._onShortcutToggleFullScreen.bind(this);
         this._onShortcutToggleRaiseHand = this._onShortcutToggleRaiseHand.bind(this);
@@ -250,9 +289,321 @@ class Toolbox extends Component<Props, State> {
         this._onShortcutToggleTileView = this._onShortcutToggleTileView.bind(this);
 
         this.state = {
-            windowWidth: window.innerWidth
-        };
+            windowWidth: window.innerWidth,
+            visible: false,
+            visiblecreate: false,
+            activeStep: 0,
+            arrpoll: [],
+            isHost: false,
+            listanswer: [],
+            newchoice:[{text : '' , select : false , user_answer : []} , {text : '' , select : false , user_answer : []}],
+            newcontent: '',
+            meetingid: '',
+            userid:'',
+            display: '',
+            counterpoll: '',
+            endpoint: env.config.API_SOCKET_IO
+            }
+        }
+    pollcounter(){
+        try {
+            axios.post( env.config.API_NODE +'/getvotes', {meetingid: this.state.meetingid , userid: this.state.userid}).then(result => {
+                let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
+                this.setState({
+                    arrpoll: result.data.data,
+                    listanswer: formatanswer, 
+                    visible: true,
+                    display: 'none'
+                })
+            })
+            return this.state.arrpoll.length  
+        } catch (error) {
+            console.log(error)
+            return null
+        }
     }
+    openModal = async () => {
+        const header = {headers: {Authorization: '0938fb91bfdb3995e986d10ecc4e7f5050da86f165c1b725fce7808043d0d51acbf4bbcb365f9da248fff5251ecf07bd68888201e9f196d3663d773d4bced8ad'}}
+        console.log(header , 'DonwLoad >>> ___ >>> ')
+        let download = await axios.get('https://box.one.th/onebox_uploads/api/dowloads_file?file_id=d180cdb0d65c6e65deb153ad84cb1b2a&user_id=12495781624',header)
+        console.log(download)
+        try {
+            if(moderator.auth.nickname){
+                this.setState({
+                    isHost: true,
+                    meetingid: moderator.auth.meetingid,
+                    userid: moderator.auth.userid
+                })
+            }
+            axios.post( env.config.API_NODE +'/getvotes', {meetingid: moderator.auth.meetingid , userid: moderator.auth.userid}).then(result => {
+                let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
+                this.setState({
+                    arrpoll: result.data.data,
+                    listanswer: formatanswer,
+                    visible: true
+                })
+            })
+        } catch (error) {
+            this.setState({
+                isHost: false,
+                meetingid: attendee.meetingid,
+                userid: attendee.userid
+            })
+            axios.post( env.config.API_NODE +'/getvotes', {meetingid: this.state.meetingid , userid: this.state.userid}).then(result => {
+                let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
+                this.setState({
+                    arrpoll: result.data.data,
+                    listanswer: formatanswer, 
+                    display: 'none',
+                    visible: true
+                })
+            })
+        }  
+    }
+    setdatapoll = async () =>{
+        console.log('SetData____________= >>> <<< =______________SetData')
+        try {
+            console.log('TRY____________= >>> <<< =______________TRY')
+            await axios.post( env.config.API_NODE +'/getvotes', {meetingid: moderator.auth.meetingid , userid: moderator.auth.userid}).then(result => {
+                let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
+                console.log('_____>>> First check meetingID' , moderator.auth.meetingid)
+                this.setState({
+                    isHost: true,
+                    meetingid: moderator.auth.meetingid,
+                    userid: moderator.auth.userid,
+                    arrpoll: result.data.data,
+                    listanswer: formatanswer
+                })
+                this.responsepoll()
+                console.log('_____>>> Second check meetingID' , this.state.meetingid)
+            })
+        } catch (error) {
+            console.log('Catch____________= >>> <<< =______________Catch')
+            this.setState({
+                isHost: false,
+                meetingid: attendee.meetingid,
+                userid: attendee.userid
+            })
+            axios.post( env.config.API_NODE +'/getvotes', {meetingid: this.state.meetingid , userid: this.state.userid}).then(result => {
+                let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
+                this.setState({
+                    arrpoll: result.data.data,
+                    listanswer: formatanswer, 
+                    display: 'none'
+                })
+            })
+        }  
+    }
+    closeModal() {
+        this.setState({
+            visible: false,
+            visiblecreate: false
+        });
+    }
+
+    async submitpoll(){
+        await axios.post( env.config.API_NODE +'/saveanswer', {meetingid: this.state.meetingid , userid: this.state.userid , answer: this.state.listanswer})
+        .then(this.setdatapoll())
+        .then(console.log('savepoll'))
+        this.setState({
+            activeStep: 0
+        });
+        this.setdatapoll()
+        this.closeModal()
+    }
+
+     handleNext = () => {
+         let preActiveStep = this.state.activeStep
+         preActiveStep  = preActiveStep + 1
+        this.setState({
+            activeStep: preActiveStep
+        });
+      };
+    
+    handleBack = () => {
+        let preActiveStep = this.state.activeStep
+        preActiveStep  = preActiveStep - 1
+        this.setState({
+            activeStep: preActiveStep
+        });
+      };
+    
+    handleChange = (question, choice) => {
+        let answer = this.state.arrpoll
+        let listanswer = this.state.listanswer
+        answer[question].choice.map(select => select.select = false)
+        answer[question].choice[choice].select = true
+        listanswer[question].choice = choice
+        this.setState({
+            arrpoll: answer,
+            listanswer : listanswer
+        })
+      }
+    openModalcreate(){
+        this.setState({
+            visible:false,
+            visiblecreate: true
+        });
+    }
+    addchoice(){
+        let prechoice = this.state.newchoice
+        if(prechoice.length <= 4){
+            prechoice.push({text : '' , select : false , user_answer : []})
+            this.setState({
+            newchoice : prechoice
+        })
+        }
+    }
+    deletechoice(){
+        let prechoice = this.state.newchoice
+        if(this.state.newchoice.length > 2){
+            prechoice.pop()
+            this.setState({
+            newchoice : prechoice
+        })
+        }
+    }
+    createPoll(){
+        let addpoll = {pollid : Date.now() , user_votes : [] , content : this.state.newcontent , choice : this.state.newchoice}
+        axios.post( env.config.API_NODE +'/addpoll', {meetingid: this.state.meetingid , userid: this.state.userid , data: addpoll})
+        .then(console.log('createpoll'))
+        .then(this.trickerpoll())
+        this.setState({
+            newchoice : [{text : '' , select : false , user_answer : []} , {text : '' , select : false , user_answer : []}],
+            newcontent: ''
+        })
+        this.closeModal()
+    }
+    setnewcontent = (event) =>{
+        this.setState({
+            newcontent :  event.target.value
+        })
+    }
+    setnewchoice = (e) =>{
+        let newarr = this.state.newchoice
+        newarr[e.target.name].text = e.target.value
+        this.setState({
+            newchoice :  newarr
+        })
+    }
+    _createPollmodal(){
+        return (
+            <Modal visible={this.state.visiblecreate} width="350" height="600" effect="fadeInUp" onClickAway={() => this.closeModal()} >
+            <div>
+            <h1 style={{"text-align" : "center" , color: "black" , "margin-top" : "15px"}} >{'Create Poll'}</h1>
+            <div style={{"text-align" : "center" , "margin-top" : "15px"}}><TextField id="outlined-basic" label="Content" variant="outlined" name="newcontent" onChange={this.setnewcontent}/></div>
+            {this.state.newchoice.map((choice, i) => (
+                <div key={i} style={{color: "black" , "text-align" : "center" , "margin-top" : "15px"}} >
+                  <TextField id="outlined-basic" label={ 'choice ' + (i + 1)} variant="outlined" name={i} onChange={this.setnewchoice}/>
+                </div>
+              ))}
+                <div style={{"text-align" : "center" , "margin-top" : "10px" , display: 'flex' , "justify-content": "center"}}>   
+                <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => this.addchoice()}>
+                <Icon style={{ color: "green[500]" }}>{"+"}</Icon>
+                </IconButton> 
+                <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => this.deletechoice()}>
+                <Icon style={{ color: "green[500]" }}>{"-"}</Icon>
+                </IconButton> </div>
+            <div style={{"text-align" : "center" }}>
+            <Button onClick={() => this.createPoll()} style={{color: "white" , background: "royalblue" , "border-radius": "20px" , "margin-top" : "10px"}}>{'Create'}</Button>
+            </div>
+          </div>
+            </Modal>
+        )
+    }
+    PaperComponent(props) {
+        return (
+          <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+            <Paper {...props} />
+          </Draggable>
+        );
+      }
+      _openPollmodal() {
+        // this.getpoll()
+        if(this.state.arrpoll.length == 0){
+            const title = <BuildTitle title="Basic Modal" />;
+            return (
+                <Modal title={title} visible={this.state.visible} width="400" height="380" effect="fadeInUp" onClickAway={() => this.closeModal() } >
+                <div style={{"margin-top" : "10px" , "text-align": "center"}}>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Logo_vote.svg" width="250px" height="250px"></img>
+                </div>
+                <div >
+                    <h1 style={{"text-align" : "center" , color: "black" , "margin-top" : "15px" , cursor: 'move'}} id="draggable-dialog-title">{'Not Have Polls'}</h1>
+                    <div style={{"text-align" : "center" , "margin-top" : "10px"}}>
+                    <Button onClick={() => this.openModalcreate()} visible={this.state.isHost} style={{color: "white" , background: "royalblue" , "border-radius": "20px" , display : this.state.display }}>{'AddPoll'}</Button>
+                </div>
+              </div>
+                </Modal>
+            )
+        }else{
+            let maxSteps = this.state.arrpoll.length;
+            let height = 180 + (this.state.arrpoll[this.state.activeStep].choice.length * 40) 
+        return (
+            <Modal style={{position: "absolute" , zIndex: 100}} visible={this.state.visible} width="400" height="380" effect="fadeInUp" onClickAway={() => this.closeModal()} >
+            <div >
+            <Paper square elevation={0} style={{color: "black" , display: "flex" , alignItems: "center" , height: 50 , paddingLeft: "25px"}}>
+                <Typography> { (this.state.activeStep+1)+ '. ' + this.state.arrpoll[this.state.activeStep].content} </Typography>
+            </Paper>
+            {this.state.arrpoll[this.state.activeStep].choice.map((choice, i) => (
+                <div key={i} style={{color: "black"}} >
+                  <Checkbox 
+                    checked={choice.select}
+                    onChange={() => this.handleChange(this.state.activeStep, i)}
+                  />
+                  { (i+1) + '. ' + choice.text}
+                </div>
+              ))}
+              <MobileStepper
+                steps={maxSteps}
+                position="static"
+                variant="text"
+                activeStep={this.state.activeStep}
+                nextButton={
+                <Button
+                    size="small"
+                    onClick={() => this.handleNext()}
+                    disabled={this.state.activeStep === maxSteps - 1}
+                >
+                Next
+                </Button>
+                }
+                backButton={
+                <Button size="small" onClick={() => this.handleBack()} disabled={this.state.activeStep === 0}>
+                Back
+                </Button>
+                }
+            />
+            <div style={{alignItems: "center" , "text-align": "center"}}>
+            <Button onClick={() => this.submitpoll()} style={{color: "white" , background: "royalblue" , "border-radius": "20px" , "margin-top" : "25px"}}>{'Submit'}</Button></div>
+          </div>
+            </Modal>
+        )
+        }
+        
+    }
+    trickerpoll = () => {
+        console.log('emit____________= >>> <<< =______________emit')
+        const socket = socketIOClient(this.state.endpoint)
+        socket.emit('sent-message', this.state.meetingid)
+      }
+    responsepoll = async () => {
+        console.log('Respone _________>> <<_____________')
+        const socket = socketIOClient(this.state.endpoint)
+        try {
+            socket.on(moderator.auth.meetingid, (messageNew) => {
+                if(messageNew == moderator.auth.meetingid){
+                    this.setdatapoll()
+                }
+            }) 
+        } catch (error) {
+            console.log('Respone _________>> <<_____________' , attendee.meetingid)
+            socket.on(attendee.meetingid, (messageNew) => {
+                if(messageNew == attendee.meetingid){
+                    this.setdatapoll()
+                }
+            })
+        } 
+      }
 
     /**
      * Sets keyboard shortcuts for to trigger ToolbarButtons actions.
@@ -261,6 +612,7 @@ class Toolbox extends Component<Props, State> {
      * @returns {void}
      */
     componentDidMount() {
+        // this.response() 
         const KEYBOARD_SHORTCUTS = [
             this._shouldShowButton('videoquality') && {
                 character: 'A',
@@ -305,6 +657,8 @@ class Toolbox extends Component<Props, State> {
         });
 
         window.addEventListener('resize', this._onResize);
+        this.setdatapoll()
+        this.responsepoll()
     }
 
     /**
@@ -333,7 +687,7 @@ class Toolbox extends Component<Props, State> {
      * @returns {void}
      */
     componentWillUnmount() {
-        [ 'A', 'C', 'D', 'R', 'S' ].forEach(letter =>
+        ['A', 'C', 'D', 'R', 'S'].forEach(letter =>
             APP.keyboardshortcut.unregisterShortcut(letter));
 
         window.removeEventListener('resize', this._onResize);
@@ -352,13 +706,14 @@ class Toolbox extends Component<Props, State> {
 
         return (
             <div
-                className = { rootClassNames }
-                id = 'new-toolbox'
-                onMouseOut = { this._onMouseOut }
-                onMouseOver = { this._onMouseOver }>
-                <div className = 'toolbox-background' />
-                { this._renderToolboxContent() }
+                className={rootClassNames}
+                id='new-toolbox'
+                onMouseOut={this._onMouseOut}
+                onMouseOver={this._onMouseOver}>
+                <div className='toolbox-background' />
+                {this._renderToolboxContent()}
             </div>
+
         );
     }
 
@@ -771,9 +1126,9 @@ class Toolbox extends Component<Props, State> {
     _onToolbarToggleFullScreen() {
         sendAnalytics(createToolbarEvent(
             'toggle.fullscreen',
-                {
-                    enable: !this.props._fullScreen
-                }));
+            {
+                enable: !this.props._fullScreen
+            }));
 
         this._doToggleFullScreen();
     }
@@ -903,13 +1258,13 @@ class Toolbox extends Component<Props, State> {
             return (
                 <OverflowMenuItem
                     accessibilityLabel
-                        = { t('toolbar.accessibilityLabel.shareYourScreen') }
-                    disabled = { _desktopSharingEnabled }
-                    icon = { IconShareDesktop }
-                    iconId = 'share-desktop'
-                    key = 'desktop'
-                    onClick = { this._onToolbarToggleScreenshare }
-                    text = {
+                    ={t('toolbar.accessibilityLabel.shareYourScreen')}
+                    disabled={_desktopSharingEnabled}
+                    icon={IconShareDesktop}
+                    iconId='share-desktop'
+                    key='desktop'
+                    onClick={this._onToolbarToggleScreenshare}
+                    text={
                         t(`toolbar.${
                             _screensharing
                                 ? 'stopScreenSharing' : 'startScreenSharing'}`
@@ -925,12 +1280,12 @@ class Toolbox extends Component<Props, State> {
         return (
             <ToolbarButton
                 accessibilityLabel
-                    = { t('toolbar.accessibilityLabel.shareYourScreen') }
-                disabled = { !_desktopSharingEnabled }
-                icon = { IconShareDesktop }
-                onClick = { this._onToolbarToggleScreenshare }
-                toggled = { _screensharing }
-                tooltip = { tooltip } />
+                ={t('toolbar.accessibilityLabel.shareYourScreen')}
+                disabled={!_desktopSharingEnabled}
+                icon={IconShareDesktop}
+                onClick={this._onToolbarToggleScreenshare}
+                toggled={_screensharing}
+                tooltip={tooltip} />
         );
     }
 
@@ -960,83 +1315,83 @@ class Toolbox extends Component<Props, State> {
 
         return [
             this._isProfileVisible()
-                && <OverflowMenuProfileItem
-                    key = 'profile'
-                    onClick = { this._onToolbarToggleProfile } />,
+            && <OverflowMenuProfileItem
+                key='profile'
+                onClick={this._onToolbarToggleProfile} />,
             this._shouldShowButton('videoquality')
-                && <OverflowMenuVideoQualityItem
-                    key = 'videoquality'
-                    onClick = { this._onToolbarOpenVideoQuality } />,
+            && <OverflowMenuVideoQualityItem
+                key='videoquality'
+                onClick={this._onToolbarOpenVideoQuality} />,
             this._shouldShowButton('fullscreen')
-                && <OverflowMenuItem
-                    accessibilityLabel = { t('toolbar.accessibilityLabel.fullScreen') }
-                    icon = { _fullScreen ? IconExitFullScreen : IconFullScreen }
-                    key = 'fullscreen'
-                    onClick = { this._onToolbarToggleFullScreen }
-                    text = { _fullScreen ? t('toolbar.exitFullScreen') : t('toolbar.enterFullScreen') } />,
+            && <OverflowMenuItem
+                accessibilityLabel={t('toolbar.accessibilityLabel.fullScreen')}
+                icon={_fullScreen ? IconExitFullScreen : IconFullScreen}
+                key='fullscreen'
+                onClick={this._onToolbarToggleFullScreen}
+                text={_fullScreen ? t('toolbar.exitFullScreen') : t('toolbar.enterFullScreen')} />,
             <LiveStreamButton
-                key = 'livestreaming'
-                showLabel = { true } />,
+                key='livestreaming'
+                showLabel={true} />,
             <RecordButton
-                key = 'record'
-                showLabel = { true } />,
+                key='record'
+                showLabel={true} />,
             this._shouldShowButton('sharedvideo')
-                && <OverflowMenuItem
-                    accessibilityLabel = { t('toolbar.accessibilityLabel.sharedvideo') }
-                    icon = { IconShareVideo }
-                    key = 'sharedvideo'
-                    onClick = { this._onToolbarToggleSharedVideo }
-                    text = { _sharingVideo ? t('toolbar.stopSharedVideo') : t('toolbar.sharedvideo') } />,
+            && <OverflowMenuItem
+                accessibilityLabel={t('toolbar.accessibilityLabel.sharedvideo')}
+                icon={IconShareVideo}
+                key='sharedvideo'
+                onClick={this._onToolbarToggleSharedVideo}
+                text={_sharingVideo ? t('toolbar.stopSharedVideo') : t('toolbar.sharedvideo')} />,
             this._shouldShowButton('etherpad')
-                && <SharedDocumentButton
-                    key = 'etherpad'
-                    showLabel = { true } />,
+            && <SharedDocumentButton
+                key='etherpad'
+                showLabel={true} />,
             <VideoBlurButton
-                key = 'videobackgroundblur'
-                showLabel = { true }
-                visible = { this._shouldShowButton('videobackgroundblur') && !_screensharing } />,
+                key='videobackgroundblur'
+                showLabel={true}
+                visible={this._shouldShowButton('videobackgroundblur') && !_screensharing} />,
             <SettingsButton
-                key = 'settings'
-                showLabel = { true }
-                visible = { this._shouldShowButton('settings') } />,
+                key='settings'
+                showLabel={true}
+                visible={this._shouldShowButton('settings')} />,
             <MuteEveryoneButton
-                key = 'mute-everyone'
-                showLabel = { true }
-                visible = { this._shouldShowButton('mute-everyone') } />,
+                key='mute-everyone'
+                showLabel={true}
+                visible={this._shouldShowButton('mute-everyone')} />,
             this._shouldShowButton('stats')
-                && <OverflowMenuItem
-                    accessibilityLabel = { t('toolbar.accessibilityLabel.speakerStats') }
-                    icon = { IconPresentation }
-                    key = 'stats'
-                    onClick = { this._onToolbarOpenSpeakerStats }
-                    text = { t('toolbar.speakerStats') } />,
+            && <OverflowMenuItem
+                accessibilityLabel={t('toolbar.accessibilityLabel.speakerStats')}
+                icon={IconPresentation}
+                key='stats'
+                onClick={this._onToolbarOpenSpeakerStats}
+                text={t('toolbar.speakerStats')} />,
             this._shouldShowButton('feedback')
-                && _feedbackConfigured
-                && <OverflowMenuItem
-                    accessibilityLabel = { t('toolbar.accessibilityLabel.feedback') }
-                    icon = { IconFeedback }
-                    key = 'feedback'
-                    onClick = { this._onToolbarOpenFeedback }
-                    text = { t('toolbar.feedback') } />,
+            && _feedbackConfigured
+            && <OverflowMenuItem
+                accessibilityLabel={t('toolbar.accessibilityLabel.feedback')}
+                icon={IconFeedback}
+                key='feedback'
+                onClick={this._onToolbarOpenFeedback}
+                text={t('toolbar.feedback')} />,
             this._shouldShowButton('shortcuts')
-                && <OverflowMenuItem
-                    accessibilityLabel = { t('toolbar.accessibilityLabel.shortcuts') }
-                    icon = { IconOpenInNew }
-                    key = 'shortcuts'
-                    onClick = { this._onToolbarOpenKeyboardShortcuts }
-                    text = { t('toolbar.shortcuts') } />,
+            && <OverflowMenuItem
+                accessibilityLabel={t('toolbar.accessibilityLabel.shortcuts')}
+                icon={IconOpenInNew}
+                key='shortcuts'
+                onClick={this._onToolbarOpenKeyboardShortcuts}
+                text={t('toolbar.shortcuts')} />,
             <EndMeetingButton
-                    key = 'end-meeting'
-                    showLabel = { true }
-                    visible = { this._shouldShowButton('end-meeting') } />,
+                key='end-meeting'
+                showLabel={true}
+                visible={this._shouldShowButton('end-meeting')} />,
             this._shouldShowButton('download')
-                && <DownloadButton
-                    key = 'download'
-                    showLabel = { true } />,
+            && <DownloadButton
+                key='download'
+                showLabel={true} />,
             this._shouldShowButton('help')
-                && <HelpButton
-                    key = 'help'
-                    showLabel = { true } />
+            && <HelpButton
+                key='help'
+                showLabel={true} />
         ];
     }
 
@@ -1057,67 +1412,67 @@ class Toolbox extends Component<Props, State> {
 
         return movedButtons.map(buttonName => {
             switch (buttonName) {
-            case 'desktop':
-                return this._renderDesktopSharingButton(true);
-            case 'raisehand':
-                return (
-                    <OverflowMenuItem
-                        accessibilityLabel =
-                            { t('toolbar.accessibilityLabel.raiseHand') }
-                        icon = { IconRaisedHand }
-                        key = 'raisedHand'
-                        onClick = { this._onToolbarToggleRaiseHand }
-                        text = {
-                            t(`toolbar.${
-                                _raisedHand
-                                    ? 'lowerYourHand' : 'raiseYourHand'}`
-                            )
-                        } />
-                );
-            case 'chat':
-                return (
-                    <OverflowMenuItem
-                        accessibilityLabel =
-                            { t('toolbar.accessibilityLabel.chat') }
-                        icon = { IconChat }
-                        key = 'chat'
-                        onClick = { this._onToolbarToggleChat }
-                        text = {
-                            t(`toolbar.${
-                                _chatOpen ? 'closeChat' : 'openChat'}`
-                            )
-                        } />
-                );
-            case 'closedcaptions':
-                return <ClosedCaptionButton showLabel = { true } />;
-            // case 'security':
-            //     return (
-            //         <SecurityDialogButton
-            //             key = 'security'
-            //             showLabel = { true } />
-            //     );
-            // case 'invite':
-            //     return (
-            //         <OverflowMenuItem
-            //             accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
-            //             icon = { IconInviteMore }
-            //             key = 'invite'
-            //             onClick = { this._onToolbarOpenInvite }
-            //             text = { t('toolbar.invite') } />
-            //     );
-            case 'tileview':
-                return <TileViewButton showLabel = { true } />;
-            case 'localrecording':
-                return (
-                    <OverflowMenuItem
-                        accessibilityLabel = { t('toolbar.accessibilityLabel.localRecording') }
-                        icon = { IconRec }
-                        key = 'localrecording'
-                        onClick = { this._onToolbarOpenLocalRecordingInfoDialog }
-                        text = { t('localRecording.dialogTitle') } />
-                );
-            default:
-                return null;
+                case 'desktop':
+                    return this._renderDesktopSharingButton(true);
+                case 'raisehand':
+                    return (
+                        <OverflowMenuItem
+                            accessibilityLabel=
+                            {t('toolbar.accessibilityLabel.raiseHand')}
+                            icon={IconRaisedHand}
+                            key='raisedHand'
+                            onClick={this._onToolbarToggleRaiseHand}
+                            text={
+                                t(`toolbar.${
+                                    _raisedHand
+                                        ? 'lowerYourHand' : 'raiseYourHand'}`
+                                )
+                            } />
+                    );
+                case 'chat':
+                    return (
+                        <OverflowMenuItem
+                            accessibilityLabel=
+                            {t('toolbar.accessibilityLabel.chat')}
+                            icon={IconChat}
+                            key='chat'
+                            onClick={this._onToolbarToggleChat}
+                            text={
+                                t(`toolbar.${
+                                    _chatOpen ? 'closeChat' : 'openChat'}`
+                                )
+                            } />
+                    );
+                case 'closedcaptions':
+                    return <ClosedCaptionButton showLabel={true} />;
+                // case 'security':
+                //     return (
+                //         <SecurityDialogButton
+                //             key = 'security'
+                //             showLabel = { true } />
+                //     );
+                // case 'invite':
+                //     return (
+                //         <OverflowMenuItem
+                //             accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
+                //             icon = { IconInviteMore }
+                //             key = 'invite'
+                //             onClick = { this._onToolbarOpenInvite }
+                //             text = { t('toolbar.invite') } />
+                //     );
+                case 'tileview':
+                    return <TileViewButton showLabel={true} />;
+                case 'localrecording':
+                    return (
+                        <OverflowMenuItem
+                            accessibilityLabel={t('toolbar.accessibilityLabel.localRecording')}
+                            icon={IconRec}
+                            key='localrecording'
+                            onClick={this._onToolbarOpenLocalRecordingInfoDialog}
+                            text={t('localRecording.dialogTitle')} />
+                    );
+                default:
+                    return null;
             }
         });
     }
@@ -1130,8 +1485,8 @@ class Toolbox extends Component<Props, State> {
     _renderAudioButton() {
         return this._shouldShowButton('microphone')
             ? <AudioSettingsButton
-                key = 'asb'
-                visible = { true } />
+                key='asb'
+                visible={true} />
             : null;
     }
 
@@ -1143,8 +1498,8 @@ class Toolbox extends Component<Props, State> {
     _renderVideoButton() {
         return this._shouldShowButton('camera')
             ? <VideoSettingsButton
-                key = 'vsb'
-                visible = { true } />
+                key='vsb'
+                visible={true} />
             : null;
     }
 
@@ -1169,15 +1524,15 @@ class Toolbox extends Component<Props, State> {
         const maxNumberOfButtonsPerGroup = Math.floor(
             (
                 this.state.windowWidth
-                    - 168 // the width of the central group by design
-                    - 48 // the minimum space between the button groups
+                - 168 // the width of the central group by design
+                - 48 // the minimum space between the button groups
             )
             / 56 // the width + padding of a button
             / 2 // divide by the number of groups(left and right group)
         );
 
         if (this._shouldShowButton('desktop')
-                && this._isDesktopSharingButtonVisible()) {
+            && this._isDesktopSharingButtonVisible()) {
             buttonsLeft.push('desktop');
         }
         if (this._shouldShowButton('raisehand')) {
@@ -1237,68 +1592,68 @@ class Toolbox extends Component<Props, State> {
 
         overflowMenuContent.splice(
             1, 0, ...this._renderMovedButtons(movedButtons));
-            // { <div className = 'toolbar-button-with-badge'>
-            // <ToolbarButton
-            //     // accessibilityLabel = { t('toolbar.accessibilityLabel.chat') }
-            //     icon = { IconVotes }
-            //     // onClick = { votes }
-            //     // toggled = { _chatOpen }
-            //     tooltip = { t('Votes / Polls') } />
-            // <ChatCounter />
-            // </div>  }
 
         return (
-            <div className = 'toolbox-content'>
-                <div className = 'button-group-left'>
-                    { buttonsLeft.indexOf('desktop') !== -1
-                        && this._renderDesktopSharingButton() }
-                    { buttonsLeft.indexOf('chat') !== -1
-                        && <div className = 'toolbar-button-with-badge'>
+            <div className='toolbox-content'>
+                <div className='button-group-left'>
+                    {buttonsLeft.indexOf('desktop') !== -1
+                        && this._renderDesktopSharingButton()}
+                    {buttonsLeft.indexOf('chat') !== -1
+                        && <div className='toolbar-button-with-badge'>
                             <ToolbarButton
-                                accessibilityLabel = { t('toolbar.accessibilityLabel.chat') }
-                                icon = { IconChat }
-                                onClick = { this._onToolbarToggleChat }
-                                toggled = { _chatOpen }
-                                tooltip = { t('toolbar.chat') } />
+                                accessibilityLabel={t('toolbar.accessibilityLabel.chat')}
+                                icon={IconChat}
+                                onClick={this._onToolbarToggleChat}
+                                toggled={_chatOpen}
+                                tooltip={t('toolbar.chat')} />
                             <ChatCounter />
-                        </div> }
+                        </div>}
                     {
                         buttonsLeft.indexOf('closedcaptions') !== -1
-                            && <ClosedCaptionButton />
+                        && <ClosedCaptionButton />
                     }
+                    {<div className='toolbar-button-with-badge'>
+                        <ToolbarButton
+                            accessibilityLabel={t('toolbar.accessibilityLabel.chat')}
+                            icon={IconVotes}
+                            onClick={() => this.openModal()}
+                            // toggled = { _chatOpen }
+                            tooltip={t('Votes / Poll')} />
+                            <span className = 'badge-round'>
+                            <span>
+                                {this.state.arrpoll.length || null }
+                            </span>
+                            </span>    
+                    </div>}
                 </div>
-                <div className = 'button-group-center'>
-                    { this._renderAudioButton() }
+                { this._openPollmodal() }
+                { this._createPollmodal()}
+                <div className='button-group-center'>
+                    {this._renderAudioButton()}
                     <HangupButton
-                        visible = { this._shouldShowButton('hangup') } />
-                    { this._renderVideoButton() }
+                        visible={this._shouldShowButton('hangup')} />
+                    {this._renderVideoButton()}
                 </div>
-                <div className = 'button-group-right'>
-                    { buttonsRight.indexOf('localrecording') !== -1
+                <div className='button-group-right'>
+                    {buttonsRight.indexOf('localrecording') !== -1
                         && <LocalRecordingButton
-                            onClick = {
+                            onClick={
                                 this._onToolbarOpenLocalRecordingInfoDialog
                             } />
                     }
-                    { buttonsRight.indexOf('tileview') !== -1
-                        && <TileViewButton /> }
-                    { buttonsRight.indexOf('invite') !== -1
-                        && <ToolbarButton
-                            accessibilityLabel =
-                                { t('toolbar.accessibilityLabel.invite') }
-                            icon = { IconInviteMore }
-                            onClick = { this._onToolbarOpenInvite }
-                            tooltip = { t('toolbar.invite') } /> }
-                    { buttonsRight.indexOf('overflowmenu') !== -1
+                    {buttonsRight.indexOf('tileview') !== -1
+                        && <TileViewButton />}
+
+                    {buttonsRight.indexOf('overflowmenu') !== -1
                         && <OverflowMenuButton
-                            isOpen = { _overflowMenuVisible }
-                            onVisibilityChange = { this._onSetOverflowVisible }>
+                            isOpen={_overflowMenuVisible}
+                            onVisibilityChange={this._onSetOverflowVisible}>
                             <ul
-                                aria-label = { t(toolbarAccLabel) }
-                                className = 'overflow-menu'>
-                                { overflowMenuContent }
+                                aria-label={t(toolbarAccLabel)}
+                                className='overflow-menu'>
+                                {overflowMenuContent}
                             </ul>
-                        </OverflowMenuButton> }
+                        </OverflowMenuButton>}
                 </div>
             </div>);
     }
