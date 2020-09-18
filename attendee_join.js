@@ -2,6 +2,8 @@ var name  = ''
 var pass = ''
 var option = ''
 var roomname = ''
+var userid = ''
+var meetingid = ''
 function getname (){
   return name;
 }
@@ -31,6 +33,20 @@ function getroomname (){
 function setroomname (roomname){
   this.roomname = roomname
 }
+function getuserid (){
+  return userid;
+}
+
+function setuserid (userid){
+  this.userid = userid
+}
+function getmeetingid (){
+  return meetingid;
+}
+
+function setmeetingid (meetingid){
+  this.meetingid = meetingid
+}
 export default{
   getname,
   setname,
@@ -39,5 +55,9 @@ export default{
   getoption,
   setoption,
   getroomname,
-  setroomname
+  setroomname,
+  getuserid,
+  setuserid,
+  getmeetingid,
+  setmeetingid
 }

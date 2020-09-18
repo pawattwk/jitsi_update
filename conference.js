@@ -2089,7 +2089,7 @@ export default {
         APP.UI.messageHandler.showError({
             descriptionKey,
             titleKey
-        });
+        }, 5000);
     },
     
     /**

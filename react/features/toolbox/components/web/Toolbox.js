@@ -3,12 +3,10 @@
 import Modal from 'react-awesome-modal';
 import DragM from "dragm";
 import socketIOClient from 'socket.io-client'
-import Draggable from 'react-draggable';
 import React, { Component } from 'react';
 import attendee from '../../../../../attendee_join'
 import moderator from '../../../../../current_auth'
 import env from '../../../../../env_nodejs'
-import votes from './Votes'
 import {
     ACTION_SHORTCUT_TRIGGERED,
     createShortcutEvent,
@@ -106,24 +104,7 @@ import IconButton from '@material-ui/core/IconButton';
  * The type of the React {@code Component} props of {@link Toolbox}.
  */
 
-class BuildTitle extends React.Component {
-    updateTransform = transformStr => {
-      this.modalDom.style.transform = transformStr;
-    };
-    componentDidMount() {
-      this.modalDom = document.getElementsByClassName(
-        "ant-modal-wrap" //modal的class是ant-modal-wrap
-      )[0];
-    }
-    render() {
-      const { title } = this.props;
-      return (
-        <DragM updateTransform={this.updateTransform}>
-          <div>{title}</div>
-        </DragM>
-      );
-    }
-  }
+
 
 
 type Props = {
@@ -268,7 +249,6 @@ class Toolbox extends Component<Props, State> {
         this._onMouseOver = this._onMouseOver.bind(this);
         this._onResize = this._onResize.bind(this);
         this._onSetOverflowVisible = this._onSetOverflowVisible.bind(this);
-        this._votes = votes.bind(this)
         this._onShortcutToggleChat = this._onShortcutToggleChat.bind(this);
         this._onShortcutToggleFullScreen = this._onShortcutToggleFullScreen.bind(this);
         this._onShortcutToggleRaiseHand = this._onShortcutToggleRaiseHand.bind(this);
@@ -511,24 +491,16 @@ class Toolbox extends Component<Props, State> {
             </Modal>
         )
     }
-    PaperComponent(props) {
-        return (
-          <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
-            <Paper {...props} />
-          </Draggable>
-        );
-      }
       _openPollmodal() {
         // this.getpoll()
         if(this.state.arrpoll.length == 0){
-            const title = <BuildTitle title="Basic Modal" />;
             return (
-                <Modal title={title} visible={this.state.visible} width="400" height="380" effect="fadeInUp" onClickAway={() => this.closeModal() } >
+                <Modal visible={this.state.visible} width="400" height="380" effect="fadeInUp" onClickAway={() => this.closeModal() } >
                 <div style={{"margin-top" : "10px" , "text-align": "center"}}>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Logo_vote.svg" width="250px" height="250px"></img>
                 </div>
                 <div >
-                    <h1 style={{"text-align" : "center" , color: "black" , "margin-top" : "15px" , cursor: 'move'}} id="draggable-dialog-title">{'Not Have Polls'}</h1>
+                    <h1 style={{"text-align" : "center" , color: "black" , "margin-top" : "15px" , cursor: 'move'}} >{'Not Have Polls'}</h1>
                     <div style={{"text-align" : "center" , "margin-top" : "10px"}}>
                     <Button onClick={() => this.openModalcreate()} visible={this.state.isHost} style={{color: "white" , background: "royalblue" , "border-radius": "20px" , display : this.state.display }}>{'AddPoll'}</Button>
                 </div>
@@ -712,6 +684,8 @@ class Toolbox extends Component<Props, State> {
                 onMouseOver={this._onMouseOver}>
                 <div className='toolbox-background' />
                 {this._renderToolboxContent()}
+                { this._openPollmodal() }
+                { this._createPollmodal()}
             </div>
 
         );
@@ -1432,12 +1406,12 @@ class Toolbox extends Component<Props, State> {
                 case 'chat':
                     return (
                         <OverflowMenuItem
-                            accessibilityLabel=
-                            {t('toolbar.accessibilityLabel.chat')}
-                            icon={IconChat}
-                            key='chat'
-                            onClick={this._onToolbarToggleChat}
-                            text={
+                            accessibilityLabel =
+                                { t('toolbar.accessibilityLabel.chat') }
+                            icon = { IconChat }
+                            key = 'chat'
+                            onClick = { this._onToolbarToggleChat }
+                            text = {
                                 t(`toolbar.${
                                     _chatOpen ? 'closeChat' : 'openChat'}`
                                 )
@@ -1451,15 +1425,15 @@ class Toolbox extends Component<Props, State> {
                 //             key = 'security'
                 //             showLabel = { true } />
                 //     );
-                // case 'invite':
-                //     return (
-                //         <OverflowMenuItem
-                //             accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
-                //             icon = { IconInviteMore }
-                //             key = 'invite'
-                //             onClick = { this._onToolbarOpenInvite }
-                //             text = { t('toolbar.invite') } />
-                //     );
+                case 'invite':
+                    return (
+                        <OverflowMenuItem
+                            accessibilityLabel = { t('toolbar.accessibilityLabel.invite') }
+                            icon = { IconInviteMore }
+                            key = 'invite'
+                            onClick = { this._onToolbarOpenInvite }
+                            text = { t('toolbar.invite') } />
+                    );
                 case 'tileview':
                     return <TileViewButton showLabel={true} />;
                 case 'localrecording':
@@ -1612,12 +1586,10 @@ class Toolbox extends Component<Props, State> {
                         buttonsLeft.indexOf('closedcaptions') !== -1
                         && <ClosedCaptionButton />
                     }
-                    {<div className='toolbar-button-with-badge'>
+                    {<div>
                         <ToolbarButton
-                            accessibilityLabel={t('toolbar.accessibilityLabel.chat')}
                             icon={IconVotes}
                             onClick={() => this.openModal()}
-                            // toggled = { _chatOpen }
                             tooltip={t('Votes / Poll')} />
                             <span className = 'badge-round'>
                             <span>
@@ -1626,8 +1598,6 @@ class Toolbox extends Component<Props, State> {
                             </span>    
                     </div>}
                 </div>
-                { this._openPollmodal() }
-                { this._createPollmodal()}
                 <div className='button-group-center'>
                     {this._renderAudioButton()}
                     <HangupButton
@@ -1643,7 +1613,13 @@ class Toolbox extends Component<Props, State> {
                     }
                     {buttonsRight.indexOf('tileview') !== -1
                         && <TileViewButton />}
-
+                    { buttonsRight.indexOf('invite') !== -1
+                    && <ToolbarButton
+                        accessibilityLabel =
+                            { t('toolbar.accessibilityLabel.invite') }
+                        icon = { IconInviteMore }
+                        onClick = { this._onToolbarOpenInvite }
+                        tooltip = { t('toolbar.invite') } /> }
                     {buttonsRight.indexOf('overflowmenu') !== -1
                         && <OverflowMenuButton
                             isOpen={_overflowMenuVisible}
@@ -1657,23 +1633,6 @@ class Toolbox extends Component<Props, State> {
                 </div>
             </div>);
     }
-    // { buttonsRight.indexOf('invite') !== -1
-    //     && <ToolbarButton
-    //         accessibilityLabel =
-    //             { t('toolbar.accessibilityLabel.invite') }
-    //         icon = { IconInviteMore }
-    //         onClick = { this._onToolbarOpenInvite }
-    //         tooltip = { t('toolbar.invite') } /> }
-
-    // { buttonsRight.indexOf('security') !== -1
-    //     && <SecurityDialogButton customClass = 'security-toolbar-button' /> }
-    // { buttonsLeft.indexOf('raisehand') !== -1
-    // && <ToolbarButton
-    //     accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
-    //     icon = { IconRaisedHand }
-    //     onClick = { this._onToolbarToggleRaiseHand }
-    //     toggled = { _raisedHand }
-    //     tooltip = { t('toolbar.raiseHand') } /> }
 
     _shouldShowButton: (string) => boolean;
 

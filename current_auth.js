@@ -1,5 +1,5 @@
 
-var auth = {id:'' , pass: '' , nickname: '' , option: '' , roomname: '' , meetingid: ''}
+var auth = {id:'' , pass: '' , nickname: '' , option: '' , roomname: '' , meetingid: '' , userid: ''}
 
 function getauth (){
   return auth;

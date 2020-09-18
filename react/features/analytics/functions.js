@@ -4,6 +4,7 @@ import { API_ID } from '../../../modules/API';
 import auth from '../../../current_auth'
 import attendee from '../../../attendee_join'
 import optioncon from '../../../optiononeconference'
+import env from '../../../env_nodejs'
 import {
     checkChromeExtensionsInstalled,
     isMobileBrowser
@@ -18,9 +19,6 @@ import { getJitsiMeetGlobalNS, loadScript } from '../base/util';
 import { AmplitudeHandler, MatomoHandler } from './handlers';
 import logger from './logger';
 import axios from 'axios'
-
-declare var interfaceConfig: Object;
-
 
 /**
  * Sends an event through the lib-jitsi-meet AnalyticsAdapter interface.
@@ -64,53 +62,50 @@ export async function createHandlers({ getState }: { getState: Function }) {
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection']
     optioncon.seturlhref(locationURL.href)
-    if(locationURL.href.includes('#attendee')){
-        const name = await decodeURI(locationURL.href.split('#')[2])
-        // const name = locationURL.href.split('#')[2]
-        const inputkey = locationURL.href.split('#')[3]
-        const option = locationURL.href.split('#')[4]
-        // const roomname = locationURL.href.split('#')[5]
-        const roomname = await decodeURI(locationURL.href.split('#')[5])
-        console.log( 'OLD_________NAME: ' , locationURL.href.split('#')[5])
-        console.log( 'OLD_________NAME: ' , roomname)
+    if(locationURL.href.includes('?attendee')){
+        const name = await decodeURI(locationURL.href.split('?')[2])
+        // const name = locationURL.href.split('?')[2]
+        const inputkey = locationURL.href.split('?')[3]
+        const option = locationURL.href.split('?')[4]
+        // const roomname = locationURL.href.split('?')[5]
+        const roomname = await decodeURI(locationURL.href.split('?')[5])
+        const userid = locationURL.href.split('?')[7]
+        const meetingids = locationURL.href.split("/")[3].split("?")[0]
+        attendee.setname(name)
+        attendee.setoption(option)
+        attendee.setroomname(roomname)
+        attendee.setuserid(userid)
+        attendee.setmeetingid(meetingids)
         try {
             let keydb 
             let meetingid = locationURL.pathname.split('/')[1]
-            if(locationURL.href.split('#')[6] == 'oneconference'){
-                keydb = await axios.post(interfaceConfig.DOMAIN + '/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
+            if(locationURL.href.split('?')[6] == 'oneconference'){
+                keydb = await axios.post(interfaceConfig.DOMAIN+'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
                 optioncon.seturlInvite(keydb.data.urlInvite)
             }else{
-                keydb = await axios.post(interfaceConfig.DOMAIN_BACK + '/checkkey',{meetingid : meetingid , clientname: 'onechat'})
-                optioncon.setcheckplatfrom('https://chat.one.th')
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK+'/checkkey',{meetingid : meetingid , clientname: 'onechat'})
             }
-            attendee.setname(name)
-            attendee.setoption(option)
-            attendee.setroomname(roomname)
             if(inputkey == keydb.data.key){
                 attendee.setpass('true')
             }else{
                 attendee.setpass('false')
             }
         } catch (error) {
-
             console.log(error)
         }
     }else{
-        const idauth = locationURL.href.split('#')[1]
-        const passauth = locationURL.href.split('#')[2]
-        // const nickname = locationURL.href.split('#')[3]
-        const nickname = await decodeURI(locationURL.href.split('#')[3])
-        const option = locationURL.href.split('#')[4]
-        const roomname = await decodeURI(locationURL.href.split('#')[5])
-        const platform = locationURL.href.split('#')[6]
-        // const roomname = locationURL.href.split('#')[5]
-        const meetingid = locationURL.href.split("/")[3].split("#")[0]
-        auth.setauth({id: idauth, pass: passauth, nickname: nickname , option: option , roomname : roomname , meetingid: meetingid})
-        if(platform === 'onechat'){
-            optioncon.setcheckplatfrom('https://chat.one.th')
-        }
+        const idauth = locationURL.href.split('?')[1]
+        const passauth = locationURL.href.split('?')[2]
+        // const nickname = locationURL.href.split('?')[3]
+        const nickname = await decodeURI(locationURL.href.split('?')[3])
+        const option = locationURL.href.split('?')[4]
+        const roomname = await decodeURI(locationURL.href.split('?')[5])
+        // const roomname = locationURL.href.split('?')[5]
+        const userids = locationURL.href.split('?')[6]
+        const meetingid = locationURL.href.split("/")[3].split("?")[0]
+        auth.setauth({id: idauth, pass: passauth, nickname: nickname , option: option , roomname : roomname , meetingid: meetingid , userid : userids})
         try {
-            let keydb = await axios.post(interfaceConfig.DOMAIN + '/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
+            let keydb = await axios.post( env.config.API_NODE+'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
             optioncon.seturlInvite(keydb.data.urlInvite)
         } catch (error) {
             console.log(error)

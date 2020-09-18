@@ -63,11 +63,11 @@ export function setNotificationsEnabled(enabled: boolean) {
  * @param {Object} props - The props needed to show the notification component.
  * @returns {Object}
  */
-export function showErrorNotification(props: Object) {
+export function showErrorNotification(props: Object, timeout: ?number) {
     return showNotification({
         ...props,
         appearance: NOTIFICATION_TYPE.ERROR
-    });
+    }, timeout);
 }
 
 /**

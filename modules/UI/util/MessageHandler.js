@@ -425,8 +425,8 @@ const messageHandler = {
      * @param {object} props - The properties to pass to the
      * showErrorNotification action.
      */
-    showError(props) {
-        APP.store.dispatch(showErrorNotification(props));
+    showError(props, timeout) {
+        APP.store.dispatch(showErrorNotification(props, timeout));
     },
 
     /**
