@@ -304,9 +304,9 @@ class Toolbox extends Component<Props, State> {
     }
     openModal = async () => {
         const header = {headers: {Authorization: '0938fb91bfdb3995e986d10ecc4e7f5050da86f165c1b725fce7808043d0d51acbf4bbcb365f9da248fff5251ecf07bd68888201e9f196d3663d773d4bced8ad'}}
-        console.log(header , 'DonwLoad >>> ___ >>> ')
+        // console.log(header , 'DonwLoad >>> ___ >>> ')
         let download = await axios.get('https://box.one.th/onebox_uploads/api/dowloads_file?file_id=d180cdb0d65c6e65deb153ad84cb1b2a&user_id=12495781624',header)
-        console.log(download)
+        // console.log(download)
         try {
             if(moderator.auth.nickname){
                 this.setState({
@@ -341,9 +341,9 @@ class Toolbox extends Component<Props, State> {
         }  
     }
     setdatapoll = async () =>{
-        console.log('SetData____________= >>> <<< =______________SetData')
+        // console.log('SetData____________= >>> <<< =______________SetData')
         try {
-            console.log('TRY____________= >>> <<< =______________TRY')
+            // console.log('TRY____________= >>> <<< =______________TRY')
             await axios.post( env.config.API_NODE +'/getvotes', {meetingid: moderator.auth.meetingid , userid: moderator.auth.userid}).then(result => {
                 let formatanswer = result.data.data.map( e => { return {pollid: e.pollid , choice : -1}})
                 console.log('_____>>> First check meetingID' , moderator.auth.meetingid)
@@ -355,10 +355,10 @@ class Toolbox extends Component<Props, State> {
                     listanswer: formatanswer
                 })
                 this.responsepoll()
-                console.log('_____>>> Second check meetingID' , this.state.meetingid)
+                // console.log('_____>>> Second check meetingID' , this.state.meetingid)
             })
         } catch (error) {
-            console.log('Catch____________= >>> <<< =______________Catch')
+            // console.log('Catch____________= >>> <<< =______________Catch')
             this.setState({
                 isHost: false,
                 meetingid: attendee.meetingid,
@@ -554,12 +554,12 @@ class Toolbox extends Component<Props, State> {
         
     }
     trickerpoll = () => {
-        console.log('emit____________= >>> <<< =______________emit')
+        // console.log('emit____________= >>> <<< =______________emit')
         const socket = socketIOClient(this.state.endpoint)
         socket.emit('sent-message', this.state.meetingid)
       }
     responsepoll = async () => {
-        console.log('Respone _________>> <<_____________')
+        // console.log('Respone _________>> <<_____________')
         const socket = socketIOClient(this.state.endpoint)
         try {
             socket.on(moderator.auth.meetingid, (messageNew) => {
@@ -1586,17 +1586,19 @@ class Toolbox extends Component<Props, State> {
                         buttonsLeft.indexOf('closedcaptions') !== -1
                         && <ClosedCaptionButton />
                     }
-                    {<div>
-                        <ToolbarButton
-                            icon={IconVotes}
-                            onClick={() => this.openModal()}
-                            tooltip={t('Votes / Poll')} />
-                            <span className = 'badge-round'>
-                            <span>
-                                {this.state.arrpoll.length || null }
-                            </span>
-                            </span>    
-                    </div>}
+                    {/* {
+                        <div>
+                            <ToolbarButton
+                                icon={IconVotes}
+                                onClick={() => this.openModal()}
+                                tooltip={t('Votes / Poll')} />
+                                <span className = 'badge-round'>
+                                    <span>
+                                        {this.state.arrpoll.length || null }
+                                    </span>
+                                </span>    
+                        </div>
+                    } */}
                 </div>
                 <div className='button-group-center'>
                     {this._renderAudioButton()}

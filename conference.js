@@ -717,6 +717,7 @@ export default {
         }
 
         if (config.iAmRecorder) {
+            attendee.setpass('true')
             this.recorder = new Recorder();
         }
 
@@ -1051,10 +1052,14 @@ export default {
      */
     
     isParticipantModerator(id) {
-        if(attendee.pass !== keyjoin){
+        if(attendee.pass !== keyjoin && !config.iAmRecorder){
             const user = room.getParticipantById(id);
             return user && user.isModerator();
-        }else{
+        }else if(config.iAmRecorder){
+            const user = room.getParticipantById(id);
+            return user
+        }
+        else{
             const user = room.getParticipantById(id);
             return user
         }
@@ -1352,7 +1357,7 @@ export default {
          */
         removeCommand() {
             // eslint-disable-next-line prefer-rest-params
-            room.removeCommand(...arguments);
+            // room.removeCommand(...arguments);
         },
 
         /**
@@ -1362,7 +1367,7 @@ export default {
          */
         sendCommand() {
             // eslint-disable-next-line prefer-rest-params
-            room.sendCommand(...arguments);
+            // room.sendCommand(...arguments);
         },
 
         /**
@@ -1377,6 +1382,10 @@ export default {
     },
 
     _createRoom(localTracks) {
+        if (config.iAmRecorder) {
+            attendee.setpass('true')
+            this.recorder = new Recorder();
+        }
         room
             = connection.initJitsiConference(
                 APP.conference.roomName,
@@ -1414,10 +1423,10 @@ export default {
 
     _getConferenceOptions() {
         this.changeLocalDisplayName.bind(this)
-        // console.log("_____1", keyjoin);
-        // console.log("_____2", attendee.pass);
-        if(attendee.pass !== keyjoin ){
+        if(attendee.pass !== keyjoin && !config.iAmRecorder){
             this.changeLocalDisplayName(auth_moderator.auth.nickname)
+        }else if(config.iAmRecorder){
+            this.changeLocalDisplayName('bot')
         }else{
             this.changeLocalDisplayName(attendee.name)
         }
@@ -2151,11 +2160,15 @@ export default {
         });
 
         room.on(JitsiConferenceEvents.USER_ROLE_CHANGED, (id, role) => {
-            if (this.isLocalId(id) && attendee.pass !== keyjoin ) {
+            if (this.isLocalId(id) && attendee.pass !== keyjoin && !config.iAmRecorder) {
                 logger.info(`My role changed, new role: ${role}`);
                 APP.store.dispatch(localParticipantRoleChanged(role));
                 APP.API.notifyUserRoleChanged(id, role);
-            } else {
+            }else if(config.iAmRecorder){
+                APP.store.dispatch(participantRoleChanged(id, 'participant'));
+                APP.store.dispatch(localParticipantRoleChanged('participant'));
+            } 
+            else {
                 APP.store.dispatch(participantRoleChanged(id, 'participant'));
                 APP.store.dispatch(localParticipantRoleChanged('participant'));
             }
@@ -2442,7 +2455,7 @@ export default {
             })
         })
 
-        if(attendee.pass !== keyjoin){
+        if(attendee.pass !== keyjoin && !config.iAmRecorder){
             AuthHandler.authenticate(room)
         }
         
@@ -3036,7 +3049,7 @@ export default {
             if(optioncon.checkplatfrom === 'https://chat.one.th'){
                 window.location.href = optioncon.checkplatfrom
             }else{
-                window.location.href = interfaceConfig.DOMAIN
+                window.location.href = interfaceConfig.DOMAIN + '/main'
             }
             // APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
         });
