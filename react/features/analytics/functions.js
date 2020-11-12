@@ -111,16 +111,12 @@ export async function createHandlers({ getState }: { getState: Function }) {
         auth.setauth({id: idauth, pass: passauth, nickname: nickname , option: option , roomname : roomname , meetingid: meetingid , userid : userids})
         try {
             let keydb
-            if (userids == 'oneconference' || userids == 'onemail') {
+            if (userids == 'ManageAi' || userids == 'onechat') {
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK +'/checkkey',{meetingid : meetingid , name: nickname, clientname: userids})
+                // optioncon.seturlInvite(keydb.data.urlInvite)
+            } else {
                 keydb = await axios.post(interfaceConfig.DOMAIN +'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
                 optioncon.seturlInvite(keydb.data.urlInvite)
-            } 
-            else if (userids == 'ManageAi') {
-                keydb = await axios.post(interfaceConfig.DOMAIN_BACK +'/checkkey',{meetingid : meetingid , name: nickname, clientname: 'ManageAi'})
-                // optioncon.seturlInvite(keydb.data.urlInvite)
-            } else { /// ONE CHAT
-                keydb = await axios.post(interfaceConfig.DOMAIN_BACK +'/checkkey',{meetingid : meetingid , name: nickname, clientname: 'onechat'}) 
-                // optioncon.seturlInvite(keydb.data.urlInvite)
             }
         } catch (error) {
             console.log(error)

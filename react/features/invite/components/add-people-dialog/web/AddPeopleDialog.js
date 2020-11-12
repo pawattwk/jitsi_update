@@ -13,7 +13,7 @@ import { connect } from '../../../../base/redux';
 import { getActiveSession } from '../../../../recording';
 import { updateDialInNumbers } from '../../../actions';
 import { _getDefaultPhoneNumber, getInviteText, isAddPeopleEnabled, isDialOutEnabled } from '../../../functions';
-import option from '../../../../../../optiononeconference'
+import optioncon from '../../../../../../optiononeconference'
 import CopyMeetingLinkSection from './CopyMeetingLinkSection';
 import DialInSection from './DialInSection';
 import Header from './Header';
@@ -150,7 +150,7 @@ function AddPeopleDialog({
             width = { 'small' }>
             <div className = 'invite-more-dialog'>
                 { !_hideInviteContacts && <InviteContactsSection /> }
-                <CopyMeetingLinkSection url = { option.urlInvite } />
+                <CopyMeetingLinkSection url = { optioncon.geturlInvite() } />
                 <InviteByEmailSection
                     inviteSubject = { inviteSubject }
                     inviteText = { invite } />
