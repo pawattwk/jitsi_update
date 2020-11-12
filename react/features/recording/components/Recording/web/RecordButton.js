@@ -7,6 +7,8 @@ import AbstractRecordButton, {
     type Props
 } from '../AbstractRecordButton';
 
+import optioncon from '../../../../../../optiononeconference'
+
 declare var interfaceConfig: Object;
 
 /**
@@ -25,16 +27,26 @@ declare var interfaceConfig: Object;
  */
 export function _mapStateToProps(state: Object, ownProps: Props): Object {
     const abstractProps = _abstractMapStateToProps(state, ownProps);
+    const urlCheck = optioncon.geturlhref();
+    const visibleByService = checkService(urlCheck)
     let { visible } = ownProps;
 
     if (typeof visible === 'undefined') {
-        visible = interfaceConfig.TOOLBAR_BUTTONS.includes('recording') && abstractProps.visible;
+        visible = interfaceConfig.TOOLBAR_BUTTONS.includes('recording') && abstractProps.visible && visibleByService;
     }
 
     return {
         ...abstractProps,
         visible
     };
+}
+
+function checkService(url) {
+    if (url.includes('?onechat') || url.includes('?ManageAi')) {
+        return false
+    } else {
+        return true
+    }
 }
 
 export default translate(connect(_mapStateToProps)(AbstractRecordButton));

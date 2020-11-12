@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars, no-var, max-len */
 
 var interfaceConfig = {
-    DOMAIN_BACK: 'https://oneconf-dev.cloudns.asia',	
-    DOMAIN: 'https://meet.one.th',
+    DOMAIN_BACK: 'https://oneconference-vc.inet.co.th',	
+    DOMAIN: 'https://oneconference-new.inet.co.th',
     // MC_IP: '192.168.92.1:27017',
     DEFAULT_BACKGROUND: '#474747',
     SOCKET_NODE: 'https://oneconference-new.inet.co.th',

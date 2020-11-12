@@ -2364,7 +2364,7 @@ export default {
             //   }
             }else{
                 // console.log('Pre_______:' , optioncon.urlhref)
-                localStorage.setItem("oneurlref", optioncon.urlhref)
+                localStorage.setItem("oneurlref", optioncon.geturlhref())
                 localStorage.setItem("countreload", 0)
                 // console.log('last______:' , localStorage.getItem("oneurlref"))
             }
@@ -3046,8 +3046,8 @@ export default {
             room = undefined;
 
             APP.API.notifyReadyToClose();
-            if(optioncon.checkplatfrom === 'https://chat.one.th'){
-                window.location.href = optioncon.checkplatfrom
+            if(optioncon.getcheckplatfrom() === 'https://chat.one.th'){
+                window.location.href = optioncon.getcheckplatfrom()
             }else{
                 window.location.href = interfaceConfig.DOMAIN + '/main'
             }

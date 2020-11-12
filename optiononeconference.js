@@ -32,11 +32,16 @@ function geturlInvite () {
   return listUrl.urlInvite;
 }
 
+function getcheckplatfrom () {
+  return listUrl.checkplatfrom;
+}
+
 export default{
   getNameJoin,
   geturlInvite,
   seturlInvite,
   geturlhref,
+  getcheckplatfrom,
   setNameJoin,
   seturlhref,
   setcheckplatfrom

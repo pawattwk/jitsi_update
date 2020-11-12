@@ -5,7 +5,7 @@ import { isLocalParticipantModerator } from '../base/participants';
 import { toState } from '../base/redux';
 import { doGetJSON, parseURIString } from '../base/util';
 
-import option from '../../../optiononeconference'
+import optioncon from '../../../optiononeconference'
 import logger from './logger';
 
 declare var $: Function;
@@ -255,7 +255,7 @@ export function getInviteText({
         : t('info.inviteURLFirstPartGeneral');
 
     invite += t('info.inviteURLSecondPart', {
-        url: option.urlInvite
+        url: optioncon.geturlInvite()
     });
 
     if (_liveStreamViewURL) {
