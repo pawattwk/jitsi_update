@@ -63,14 +63,15 @@ export async function createHandlers({ getState }: { getState: Function }) {
     const { locationURL } = state['features/base/connection']
     optioncon.seturlhref(locationURL.href)
     if(locationURL.href.includes('?attendee')){
-        const name = await decodeURI(locationURL.href.split('?')[2])
-        // const name = locationURL.href.split('?')[2]
+        // const name = await decodeURI(locationURL.href.split('?')[2])
+        const name = locationURL.href.split('?')[2]
         const inputkey = locationURL.href.split('?')[3]
         const option = locationURL.href.split('?')[4]
-        // const roomname = locationURL.href.split('?')[5]
-        const roomname = await decodeURI(locationURL.href.split('?')[5])
+        const roomname = locationURL.href.split('?')[5]
+        // const roomname = await decodeURI(locationURL.href.split('?')[5])
         const userid = locationURL.href.split('?')[7]
         const meetingids = locationURL.href.split("/")[3].split("?")[0]
+        optioncon.setNameJoin(name)
         attendee.setname(name)
         attendee.setoption(option)
         attendee.setroomname(roomname)
@@ -79,11 +80,14 @@ export async function createHandlers({ getState }: { getState: Function }) {
         try {
             let keydb 
             let meetingid = locationURL.pathname.split('/')[1]
-            if(locationURL.href.split('?')[6] == 'oneconference'){
+            if(locationURL.href.split('?')[6] == 'oneconference' || locationURL.href.split('?')[6] == 'onemail'){
                 keydb = await axios.post(interfaceConfig.DOMAIN+'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
                 optioncon.seturlInvite(keydb.data.urlInvite)
+            }
+            else if (locationURL.href.split('?')[6] == 'ManageAi') {
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK+'/checkkey',{meetingid : meetingid , name: name, clientname: 'ManageAi'})
             }else{
-                keydb = await axios.post(interfaceConfig.DOMAIN_BACK+'/checkkey',{meetingid : meetingid , clientname: 'onechat'})
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK+'/checkkey',{meetingid : meetingid , name: name, clientname: 'onechat'})
             }
             if(inputkey == keydb.data.key){
                 attendee.setpass('true')
@@ -96,17 +100,28 @@ export async function createHandlers({ getState }: { getState: Function }) {
     }else{
         const idauth = locationURL.href.split('?')[1]
         const passauth = locationURL.href.split('?')[2]
-        // const nickname = locationURL.href.split('?')[3]
-        const nickname = await decodeURI(locationURL.href.split('?')[3])
+        const nickname = locationURL.href.split('?')[3]
+        // const nickname = await decodeURI(locationURL.href.split('?')[3])
         const option = locationURL.href.split('?')[4]
-        const roomname = await decodeURI(locationURL.href.split('?')[5])
-        // const roomname = locationURL.href.split('?')[5]
+        // const roomname = await decodeURI(locationURL.href.split('?')[5])
+        const roomname = locationURL.href.split('?')[5]
         const userids = locationURL.href.split('?')[6]
         const meetingid = locationURL.href.split("/")[3].split("?")[0]
+        optioncon.setNameJoin(nickname)
         auth.setauth({id: idauth, pass: passauth, nickname: nickname , option: option , roomname : roomname , meetingid: meetingid , userid : userids})
         try {
-            let keydb = await axios.post( env.config.API_NODE+'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
-            optioncon.seturlInvite(keydb.data.urlInvite)
+            let keydb
+            if (userids == 'oneconference' || userids == 'onemail') {
+                keydb = await axios.post(interfaceConfig.DOMAIN +'/checkkey',{meetingid : meetingid , clientname: 'oneconference'})
+                optioncon.seturlInvite(keydb.data.urlInvite)
+            } 
+            else if (userids == 'ManageAi') {
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK +'/checkkey',{meetingid : meetingid , name: nickname, clientname: 'ManageAi'})
+                // optioncon.seturlInvite(keydb.data.urlInvite)
+            } else { /// ONE CHAT
+                keydb = await axios.post(interfaceConfig.DOMAIN_BACK +'/checkkey',{meetingid : meetingid , name: nickname, clientname: 'onechat'}) 
+                // optioncon.seturlInvite(keydb.data.urlInvite)
+            }
         } catch (error) {
             console.log(error)
         }

@@ -1,27 +1,43 @@
-var urlInvite  = ''
-var urlhref = ''
-var checkplatfrom = ''
-function geturlhref (){
-  return urlhref;
+var listUrl = {
+  nameJoin: '',
+  urlInvite: '',
+  urlhref: '',
+  checkplatfrom: ''
 }
 
-function seturlhref (urlhref){
-  this.urlhref = urlhref
+function setNameJoin (nameJoin) {
+  listUrl.nameJoin = nameJoin
 }
-function geturlInvite (){
-  return urlInvite;
+
+function seturlhref (urlhref) {
+  listUrl.urlhref = urlhref
 }
 
 function seturlInvite (urlInvite){
-  this.urlInvite = urlInvite
+  listUrl.urlInvite = urlInvite
 }
 function setcheckplatfrom (checkplatfrom){
-  this.checkplatfrom = checkplatfrom
+  listUrl.checkplatfrom = checkplatfrom
 }
+
+function getNameJoin () {
+  return listUrl.nameJoin;
+}
+
+function geturlhref () {
+  return listUrl.urlhref;
+}
+
+function geturlInvite () {
+  return listUrl.urlInvite;
+}
+
 export default{
+  getNameJoin,
   geturlInvite,
   seturlInvite,
   geturlhref,
+  setNameJoin,
   seturlhref,
   setcheckplatfrom
 }

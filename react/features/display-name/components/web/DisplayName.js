@@ -12,6 +12,8 @@ import { connect } from '../../../base/redux';
 import { updateSettings } from '../../../base/settings';
 import { appendSuffix } from '../../functions';
 
+
+declare var interfaceConfig: Object;
 /**
  * The type of the React {@code Component} props of {@link DisplayName}.
  */
@@ -151,7 +153,8 @@ class DisplayName extends Component<Props, State> {
             t
         } = this.props;
 
-        if (allowEditing && this.state.isEditing) {
+        const editOrNot = interfaceConfig.EDIT_NAME
+        if (allowEditing && this.state.isEditing && editOrNot) {
             return (
                 <input
                     autoFocus = { true }
@@ -171,12 +174,18 @@ class DisplayName extends Component<Props, State> {
         return (
             <span
                 className = 'displayname'
-                id = { elementID }
-                onClick = { this._onStartEditing }>
+                id = { elementID } >
                 { appendSuffix(_nameToDisplay, displayNameSuffix) }
             </span>
         );
     }
+
+            // <span
+            //     className = 'displayname'
+            //     id = { elementID }
+            //     onClick = { this._onStartEditing }>
+            //     { appendSuffix(_nameToDisplay, displayNameSuffix) }
+            // </span>
 
     _onChange: () => void;
 

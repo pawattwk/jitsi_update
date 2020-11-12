@@ -3,6 +3,7 @@
 import React from 'react';
 import axios from 'axios'
 import moderator from '../../../../../current_auth'
+import optioncon from '../../../../../optiononeconference'
 import { Dialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
@@ -99,15 +100,22 @@ class EndMeetingDialog extends AbstractEndMeetingParticipantDialog<Props> {
                 dispatch,
                 exclude
             } = this.props;
-
-            console.log('exclude--', exclude);
+            const urlCheck = optioncon.geturlhref();
+            let domainEnd
             // APP.store.dispatch(maybeOpenFeedbackDialog(conference))
             dispatch(endAllParticipants(exclude))
-            // await axios.post('https://oneconference-new.inet.co.th/endmeeting' , {meetingid : moderator.auth.meetingid})
-            await axios.post(interfaceConfig.DOMAIN + '/endmeeting' , {meetingid : moderator.auth.meetingid})
-            APP.UI.emitEvent(UIEvents.LOGOUT)
-            // window.location.href = 'https://chat.one.th'
-            console.log('--------Redirect---------');
+
+            if (urlCheck.includes('?onechat')) {
+                domainEnd = interfaceConfig.DOMAIN_BACK + '/service/endmeeting'
+                await axios.post(domainEnd, { meetingid : moderator.auth.meetingid, clientname: 'onechat'})
+            } else if (urlCheck.includes('?ManageAi')) {
+                domainEnd = interfaceConfig.DOMAIN_BACK + '/service/endmeeting'
+                await axios.post(domainEnd, { meetingid : moderator.auth.meetingid, clientname: 'ManageAi'})
+            } else {
+                await axios.post(interfaceConfig.DOMAIN + '/endmeeting' , { meetingid : moderator.auth.meetingid })
+            }
+            conference.UI.emitEvent(UIEvents.LOGOUT)
+            // console.log('--------Redirect---------');
             // conference.UI.emitEvent(UIEvents.LOGOUT);
             return true;
         } catch (error) {

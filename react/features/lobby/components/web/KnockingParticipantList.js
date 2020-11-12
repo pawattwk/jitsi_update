@@ -11,6 +11,11 @@ import AbstractKnockingParticipantList, {
     type Props as AbstractProps
 } from '../AbstractKnockingParticipantList';
 
+import socketIOClient from 'socket.io-client'
+import axios from 'axios';
+
+declare var interfaceConfig: Object;
+
 type Props = AbstractProps & {
 
     /**
@@ -28,8 +33,35 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
      *
      * @inheritdoc
      */
+    constructor() {
+        super()
+        this.state = {
+            hostname: '',
+            meetingId: '',
+            member: [],
+            endpoint: interfaceConfig.SOCKET_NODE || 'https://oneconference-new.inet.co.th' //UAT socket
+        }
+        const socket = socketIOClient(this.state.endpoint)
+    }
+    onHostname = () => {
+        const { hostname, meetingId } = this.state
+        let dataBody = {
+            meetingId: meetingId
+        }
+        // console.log("MEETING_ID--> ",window.location.href)
+        // axios.post(interfaceConfig.DOMAIN_BACK, dataBody)
+        //     .then( (res) => {
+        //         console.log("Check session -->> ", res)
+        //     })
+    }
+    resMember = () => {
+        const { member } = this.state
+
+    }
     render() {
-        const { _participants, _toolboxVisible, _visible, t } = this.props;
+        const { _participants, _visible, t } = this.props;
+        const knockingBox = true
+        this.onHostname()
 
         if (!_visible) {
             return null;
@@ -37,7 +69,7 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
 
         return (
             <div
-                className = { _toolboxVisible ? 'toolbox-visible' : '' }
+                className = { knockingBox ? 'toolbox-visible' : '' }
                 id = 'knocking-participant-list'>
                 <span className = 'title'>
                     Knocking participant list
@@ -45,10 +77,10 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
                 <ul>
                     { _participants.map(p => (
                         <li key = { p.id }>
-                            <Avatar
+                            {/* <Avatar
                                 displayName = { p.name }
                                 size = { 48 }
-                                url = { p.loadableAvatarUrl } />
+                                url = { p.loadableAvatarUrl } /> */}
                             <div className = 'details'>
                                 <span>
                                     { p.name }

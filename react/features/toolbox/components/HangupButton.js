@@ -10,6 +10,9 @@ import { connect } from '../../base/redux';
 import { AbstractHangupButton } from '../../base/toolbox';
 import type { AbstractButtonProps } from '../../base/toolbox';
 
+import optioncon from '../../../../optiononeconference'
+import axios from 'axios';
+
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.
  */
@@ -44,7 +47,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
         this._hangup = _.once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
-
+            this._endJoin();
             // FIXME: these should be unified.
             if (navigator.product === 'ReactNative') {
                 this.props.dispatch(appNavigate(undefined));
@@ -52,6 +55,23 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 this.props.dispatch(disconnect(true));
             }
         });
+
+        this._endJoin = async () => {
+            let domainEnd = interfaceConfig.DOMAIN_BACK
+            let urlCheck = optioncon.geturlhref();
+            let nameJoin = optioncon.getNameJoin();
+            let meetingId = urlCheck.split('/')[3].split('?')[0]
+            // console.log("nameJoin: ", nameJoin)
+
+            if (urlCheck.includes('?onechat')) {
+                await axios.post(domainEnd + '/service/endjoin', { meetingid : meetingId, name: nameJoin, clientname: 'onechat'})
+            } else if (urlCheck.includes('?ManageAi')) {
+                await axios.post(domainEnd + '/service/endjoin', { meetingid : meetingId, name: nameJoin, clientname: 'ManageAi'})
+            } 
+            // else {
+            //     await axios.post(interfaceConfig.DOMAIN + '/endmeeting' , { meetingid : moderator.auth.meetingid })
+            // }
+        }
     }
 
     /**

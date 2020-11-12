@@ -1,51 +1,55 @@
-var name  = ''
-var pass = ''
-var option = ''
-var roomname = ''
-var userid = ''
-var meetingid = ''
+var listInfo = {
+  name: '',
+  pass: '',
+  option: '',
+  roomname: '',
+  userid : '',
+  meetingid: ''
+}
+
+
 function getname (){
-  return name;
+  return listInfo.name;
 }
 
 function setname (name){
-  this.name = name
+  listInfo.name = name
 }
 
 function getpass (){
-  return pass;
+  return listInfo.pass;
 }
 
 function setpass (pass){
-  this.pass = pass
+  listInfo.pass = pass
 }
 function getoption (){
-  return option;
+  return listInfo.option;
 }
 
 function setoption (option){
-  this.option = option
+  listInfo.option = option
 }
 function getroomname (){
-  return roomname;
+  return listInfo.roomname;
 }
 
 function setroomname (roomname){
-  this.roomname = roomname
+  listInfo.roomname = roomname
 }
 function getuserid (){
-  return userid;
+  return listInfo.userid;
 }
 
 function setuserid (userid){
-  this.userid = userid
+  listInfo.userid = userid
 }
 function getmeetingid (){
-  return meetingid;
+  return listInfo.meetingid;
 }
 
 function setmeetingid (meetingid){
-  this.meetingid = meetingid
+  listInfo.meetingid = meetingid
 }
 export default{
   getname,

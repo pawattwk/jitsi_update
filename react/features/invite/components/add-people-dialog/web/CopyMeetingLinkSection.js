@@ -94,7 +94,7 @@ function CopyMeetingLinkSection({ t, url }: Props) {
         );
     }
 
-    return (
+    return ( 
         <>
             <span>{t('addPeople.shareLink')}</span>
             <div

@@ -1,13 +1,14 @@
 /* eslint-disable no-unused-vars, no-var, max-len */
 
 var interfaceConfig = {
-    DOMAIN_BACK: 'https://meet-room.one.th',	
+    DOMAIN_BACK: 'https://oneconf-dev.cloudns.asia',	
     DOMAIN: 'https://meet.one.th',
     // MC_IP: '192.168.92.1:27017',
     DEFAULT_BACKGROUND: '#474747',
+    SOCKET_NODE: 'https://oneconference-new.inet.co.th',
     // DEFAULT_LOGO_URL: '/images/inetlogo.png',
     // 'https://oneconf-dev3.cloudns.asia/images/watermark.png',
-
+    EDIT_NAME: false,
     /**
      * Whether or not the blurred video background for large video should be
      * displayed on browsers that can support it.
@@ -264,7 +265,7 @@ var interfaceConfig = {
      * explicitly dismissed through a user action. The value is how long, in
      * milliseconds, those notifications should remain displayed.
      */
-    // ENFORCE_NOTIFICATION_AUTO_DISMISS_TIMEOUT: 15000,
+    ENFORCE_NOTIFICATION_AUTO_DISMISS_TIMEOUT: 4000,
 
     // List of undocumented settings
     /**

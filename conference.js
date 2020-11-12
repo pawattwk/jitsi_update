@@ -758,7 +758,7 @@ export default {
         //         || isUserInteractionRequiredForUnmute(APP.store.getState())
         // }
         try {
-            if(attendee.option == 'voice' || auth_moderator.auth.option == 'voice'){
+            if(attendee.getoption() == 'voice' || auth_moderator.auth.option == 'voice'){
                 initialOptions = {
                     startAudioOnly: config.startAudioOnly,
                     startScreenSharing: config.startScreenSharing,
@@ -1052,7 +1052,7 @@ export default {
      */
     
     isParticipantModerator(id) {
-        if(attendee.pass !== keyjoin && !config.iAmRecorder){
+        if(attendee.getpass() !== keyjoin && !config.iAmRecorder){
             const user = room.getParticipantById(id);
             return user && user.isModerator();
         }else if(config.iAmRecorder){
@@ -1423,12 +1423,12 @@ export default {
 
     _getConferenceOptions() {
         this.changeLocalDisplayName.bind(this)
-        if(attendee.pass !== keyjoin && !config.iAmRecorder){
+        if(attendee.getpass() !== keyjoin && !config.iAmRecorder){
             this.changeLocalDisplayName(auth_moderator.auth.nickname)
         }else if(config.iAmRecorder){
             this.changeLocalDisplayName('bot')
         }else{
-            this.changeLocalDisplayName(attendee.name)
+            this.changeLocalDisplayName(attendee.getname())
         }
         const options = config;
         const { email, name: nick } = getLocalParticipant(APP.store.getState());
@@ -2160,7 +2160,7 @@ export default {
         });
 
         room.on(JitsiConferenceEvents.USER_ROLE_CHANGED, (id, role) => {
-            if (this.isLocalId(id) && attendee.pass !== keyjoin && !config.iAmRecorder) {
+            if (this.isLocalId(id) && attendee.getpass() !== keyjoin && !config.iAmRecorder) {
                 logger.info(`My role changed, new role: ${role}`);
                 APP.store.dispatch(localParticipantRoleChanged(role));
                 APP.API.notifyUserRoleChanged(id, role);
@@ -2455,7 +2455,7 @@ export default {
             })
         })
 
-        if(attendee.pass !== keyjoin && !config.iAmRecorder){
+        if(attendee.getpass() !== keyjoin && !config.iAmRecorder){
             AuthHandler.authenticate(room)
         }
         

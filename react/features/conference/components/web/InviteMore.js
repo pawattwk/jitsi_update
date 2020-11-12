@@ -12,6 +12,8 @@ import {
     isToolboxVisible
 } from '../../../toolbox';
 
+import optioncon from '../../../../../optiononeconference'
+
 declare var interfaceConfig: Object;
 
 type Props = {
@@ -53,7 +55,7 @@ function InviteMore({
 }: Props) {
     return (
         _visible
-            ? <div className = { `invite-more-container${_tileViewEnabled ? ' elevated' : ''}` }>
+            ? <div className = { `invite-more-container${ _tileViewEnabled ? ' elevated' : ''}` }>
                 <div className = 'invite-more-header'>
                     {t('addPeople.inviteMoreHeader')}
                 </div>
@@ -81,11 +83,24 @@ function mapStateToProps(state) {
     const participantCount = getParticipantCount(state);
     const isAlone = participantCount === 1;
     const hide = interfaceConfig.HIDE_INVITE_MORE_HEADER;
+    const urlCheck = optioncon.geturlhref();
+    const visibleByService = {
+        stateVisible: checkVisibleTag(urlCheck)
+    }
 
     return {
         _tileViewEnabled: state['features/video-layout'].tileViewEnabled,
-        _visible: isToolboxVisible(state) && isButtonEnabled('invite') && isAlone && !hide
+        _visible: isToolboxVisible(state) && isButtonEnabled('invite') && isAlone && !hide && visibleByService.stateVisible
     };
+}
+
+function checkVisibleTag(url) {
+    // console.log("------>", url)
+    if (url.includes('?onechat') || url.includes('?ManageAi')) {
+        return false
+    } else {
+        return true
+    }
 }
 
 /**
