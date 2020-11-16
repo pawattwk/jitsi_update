@@ -199,9 +199,11 @@ export function toggleLobbyMode(enabled: boolean) {
         const conference = getCurrentConference(getState);
 
         if (enabled) {
-            conference.enableLobby();
+            console.log("--> enable");
+            // conference.enableLobby();
         } else {
-            conference.disableLobby();
+            console.log("--> disable");
+            // conference.disableLobby();
         }
     };
 }

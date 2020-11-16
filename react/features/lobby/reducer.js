@@ -14,7 +14,7 @@ import {
 const DEFAULT_STATE = {
     knocking: false,
     knockingParticipants: [],
-    lobbyEnabled: false,
+    lobbyEnabled: true,
     passwordJoinFailed: false
 };
 
@@ -36,6 +36,8 @@ ReducerRegistry.register('features/lobby', (state = DEFAULT_STATE, action) => {
             passwordJoinFailed: false
         };
     case KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED:
+        // console.log("Reducer: ", action)
+        // console.log("Reducer_State: ", state)
         return _knockingParticipantArrivedOrUpdated(action.participant, state);
     case KNOCKING_PARTICIPANT_LEFT:
         return {
@@ -82,6 +84,7 @@ function _knockingParticipantArrivedOrUpdated(participant, state) {
         ...existingParticipant,
         ...participant
     };
+    // console.log("ExistingParticipant: ", existingParticipant)
 
     return {
         ...state,

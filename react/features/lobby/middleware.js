@@ -2,8 +2,9 @@
 
 import { CONFERENCE_FAILED, CONFERENCE_JOINED } from '../base/conference';
 import { JitsiConferenceErrors, JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { getFirstLoadableAvatarUrl } from '../base/participants';
+import { getFirstLoadableAvatarUrl, getParticipantDisplayName } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
+import { isTestModeEnabled } from '../base/testing';
 import { NOTIFICATION_TYPE, showNotification } from '../notifications';
 import { isPrejoinPageEnabled } from '../prejoin/functions';
 
@@ -28,7 +29,7 @@ MiddlewareRegistry.register(store => next => action => {
         // We need the full update result to be in the store already
         const result = next(action);
 
-        _findLoadableAvatarForKnockingParticipant(store, action.participant);
+        // _findLoadableAvatarForKnockingParticipant(store, action.participant);
 
         return result;
     }
@@ -43,7 +44,7 @@ MiddlewareRegistry.register(store => next => action => {
  */
 StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
-    (conference, { dispatch }, previousConference) => {
+    (conference, { dispatch, getState }, previousConference) => {
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.MEMBERS_ONLY_CHANGED, enabled => {
                 dispatch(setLobbyModeEnabled(enabled));
@@ -66,6 +67,13 @@ StateListenerRegistry.register(
             conference.on(JitsiConferenceEvents.LOBBY_USER_LEFT, id => {
                 dispatch(knockingParticipantLeft(id));
             });
+
+            conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED, (origin, sender) =>
+                _maybeSendLobbyNotification(origin, sender, {
+                    dispatch,
+                    getState
+                })
+            );
         }
     });
 
@@ -139,9 +147,12 @@ function _conferenceJoined({ dispatch }, next, action) {
 function _findLoadableAvatarForKnockingParticipant({ dispatch, getState }, { id }) {
     const updatedParticipant = getState()['features/lobby'].knockingParticipants.find(p => p.id === id);
     const { disableThirdPartyRequests } = getState()['features/base/config'];
+    console.log("GetAvater: ",updatedParticipant)
+    
 
     if (!disableThirdPartyRequests && updatedParticipant && !updatedParticipant.loadableAvatarUrl) {
         getFirstLoadableAvatarUrl(updatedParticipant).then(loadableAvatarUrl => {
+            console.log("SuccessAvaterURL: ",loadableAvatarUrl)
             if (loadableAvatarUrl) {
                 dispatch(participantIsKnockingOrUpdated({
                     loadableAvatarUrl,

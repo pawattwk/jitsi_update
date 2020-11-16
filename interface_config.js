@@ -5,7 +5,7 @@ var interfaceConfig = {
     DOMAIN: 'https://oneconference-new.inet.co.th',
     // MC_IP: '192.168.92.1:27017',
     DEFAULT_BACKGROUND: '#474747',
-    SOCKET_NODE: 'https://oneconference-new.inet.co.th',
+    SOCKET_NODE: 'https://oneconf-dev3.cloudns.asia',
     // DEFAULT_LOGO_URL: '/images/inetlogo.png',
     // 'https://oneconf-dev3.cloudns.asia/images/watermark.png',
     EDIT_NAME: false,

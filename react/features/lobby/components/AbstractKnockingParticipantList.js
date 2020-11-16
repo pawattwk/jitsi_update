@@ -3,7 +3,12 @@
 import { PureComponent } from 'react';
 
 import { isLocalParticipantModerator } from '../../base/participants';
-import { setKnockingParticipantApproval } from '../actions';
+import { setKnockingParticipantApproval, participantIsKnockingOrUpdated, setKnockingState, knockingParticipantLeft } from '../actions';
+
+import socketIOClient from 'socket.io-client';
+import hostAuth from "../../../../current_auth";
+
+declare var interfaceConfig: Object;
 
 export type Props = {
 
@@ -40,10 +45,30 @@ export default class AbstractKnockingParticipantList<P: Props = Props> extends P
     constructor(props: P) {
         super(props);
 
-        this._onRespondToParticipant = this._onRespondToParticipant.bind(this);
+        this.state = {
+            hostname: hostAuth.auth.nickname,
+            meetingId: hostAuth.auth.meetingid,
+            endpoint: interfaceConfig.SOCKET_NODE || 'https://oneconf-dev3.cloudns.asia' ///UAT test
+        }
+
     }
 
-    _onRespondToParticipant: (string, boolean) => Function;
+    componentDidMount() {
+        this.onSocketTest()
+    }
+
+    onSocketTest() {
+        const { dispatch } = this.props
+        const { meetingId, endpoint } = this.state
+        const onMeetingId = meetingId
+        const socket = socketIOClient(endpoint)
+        socket.on(onMeetingId , (incoming) => {
+            console.log("Mysocket: ", incoming)
+            // dispatch(setKnockingState(true))
+            dispatch(participantIsKnockingOrUpdated(incoming));
+        })
+    }
+
 
     /**
      * Function that constructs a callback for the response handler button.
@@ -52,10 +77,20 @@ export default class AbstractKnockingParticipantList<P: Props = Props> extends P
      * @param {boolean} approve - The response for the knocking.
      * @returns {Function}
      */
-    _onRespondToParticipant(id, approve) {
-        return () => {
-            this.props.dispatch(setKnockingParticipantApproval(id, approve));
-        };
+    // return Approve to Socket
+    _onRespondToParticipantSocket(id, approve) {
+        const { dispatch } = this.props
+        const { meetingId, endpoint } = this.state
+        const socket = socketIOClient(endpoint)
+        const data = {
+            meetingid: meetingId,
+            id: id,
+            approve: approve
+        }
+        console.log("DATA: ", data)
+        socket.emit('handleApprove', data) 
+        // dispatch(setKnockingState(false))
+        dispatch(knockingParticipantLeft(id))
     }
 }
 
@@ -67,9 +102,10 @@ export default class AbstractKnockingParticipantList<P: Props = Props> extends P
  */
 export function mapStateToProps(state: Object): $Shape<Props> {
     const { knockingParticipants, lobbyEnabled } = state['features/lobby'];
+    // console.log("KnockingParticipants: ", knockingParticipants)
 
     return {
         _participants: knockingParticipants,
-        _visible: lobbyEnabled && isLocalParticipantModerator(state) && Boolean(knockingParticipants.length)
+        _visible: isLocalParticipantModerator(state) && Boolean(knockingParticipants.length)
     };
 }

@@ -5,16 +5,13 @@ import React from 'react';
 import { Avatar } from '../../../base/avatar';
 import { translate } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
-import { isToolboxVisible } from '../../../toolbox';
+import { isToolboxVisible } from '../../../toolbox/functions.web';
 import AbstractKnockingParticipantList, {
     mapStateToProps as abstractMapStateToProps,
     type Props as AbstractProps
 } from '../AbstractKnockingParticipantList';
 
-import socketIOClient from 'socket.io-client'
-import axios from 'axios';
-
-declare var interfaceConfig: Object;
+// import socketIOClient from 'socket.io-client';
 
 type Props = AbstractProps & {
 
@@ -33,35 +30,11 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
      *
      * @inheritdoc
      */
-    constructor() {
-        super()
-        this.state = {
-            hostname: '',
-            meetingId: '',
-            member: [],
-            endpoint: interfaceConfig.SOCKET_NODE || 'https://oneconference-new.inet.co.th' //UAT socket
-        }
-        const socket = socketIOClient(this.state.endpoint)
-    }
-    onHostname = () => {
-        const { hostname, meetingId } = this.state
-        let dataBody = {
-            meetingId: meetingId
-        }
-        // console.log("MEETING_ID--> ",window.location.href)
-        // axios.post(interfaceConfig.DOMAIN_BACK, dataBody)
-        //     .then( (res) => {
-        //         console.log("Check session -->> ", res)
-        //     })
-    }
-    resMember = () => {
-        const { member } = this.state
-
-    }
     render() {
-        const { _participants, _visible, t } = this.props;
-        const knockingBox = true
-        this.onHostname()
+        const { _participants, _toolboxVisible, _visible, t } = this.props;
+        console.log("IncomingParticipants: ", _participants)
+        // console.log("ToolboxVisible: ", _toolboxVisible);
+        // console.log("_Visible: ", _toolboxVisible);
 
         if (!_visible) {
             return null;
@@ -69,10 +42,10 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
 
         return (
             <div
-                className = { knockingBox ? 'toolbox-visible' : '' }
+                className = { _toolboxVisible ? 'toolbox-visible' : '' }
                 id = 'knocking-participant-list'>
                 <span className = 'title'>
-                    Knocking participant list
+                    { t('lobby.knockingParticipantList') }
                 </span>
                 <ul>
                     { _participants.map(p => (
@@ -80,26 +53,29 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
                             {/* <Avatar
                                 displayName = { p.name }
                                 size = { 48 }
+                                testId = 'knockingParticipant.avatar'
                                 url = { p.loadableAvatarUrl } /> */}
                             <div className = 'details'>
-                                <span>
+                                <span data-testid = 'knockingParticipant.name'>
                                     { p.name }
                                 </span>
                                 { p.email && (
-                                    <span>
+                                    <span data-testid = 'knockingParticipant.email'>
                                         { p.email }
                                     </span>
                                 ) }
                             </div>
                             <button
                                 className = 'primary'
-                                onClick = { this._onRespondToParticipant(p.id, true) }
+                                data-testid = 'lobby.allow'
+                                onClick = { () => this._onRespondToParticipantSocket(p.id, true) }
                                 type = 'button'>
                                 { t('lobby.allow') }
                             </button>
                             <button
                                 className = 'borderLess'
-                                onClick = { this._onRespondToParticipant(p.id, false) }
+                                data-testid = 'lobby.reject'
+                                onClick = { () => this._onRespondToParticipantSocket(p.id, false) }
                                 type = 'button'>
                                 { t('lobby.reject') }
                             </button>
@@ -110,7 +86,6 @@ class KnockingParticipantList extends AbstractKnockingParticipantList<Props> {
         );
     }
 
-    _onRespondToParticipant: (string, boolean) => Function;
 }
 
 /**

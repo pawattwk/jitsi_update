@@ -18,6 +18,7 @@ import { getJitsiMeetGlobalNS, loadScript } from '../base/util';
 
 import { AmplitudeHandler, MatomoHandler } from './handlers';
 import logger from './logger';
+
 import axios from 'axios'
 
 /**
