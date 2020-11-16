@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars, no-var, max-len */
 
 var interfaceConfig = {
-    DOMAIN_BACK: 'https://oneconf-dev.cloudns.asia',	
-    DOMAIN: 'https://oneconference-new.inet.co.th',
+    DOMAIN_BACK: 'https://oneconf-dev.cloudns.asia', // backend for MC	
+    DOMAIN: 'https://oneconference-new.inet.co.th', // frontend Redirect
     // MC_IP: '192.168.92.1:27017',
     DEFAULT_BACKGROUND: '#474747',
-    SOCKET_NODE: 'https://oneconf-dev3.cloudns.asia',
+    SOCKET_NODE: 'https://oneconf-dev3.cloudns.asia', // Socket io node
     // DEFAULT_LOGO_URL: '/images/inetlogo.png',
     // 'https://oneconf-dev3.cloudns.asia/images/watermark.png',
     EDIT_NAME: false,
